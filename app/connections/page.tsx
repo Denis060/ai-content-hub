@@ -73,25 +73,32 @@ const platformConfigs = [
 export default function ConnectionsPage() {
   const { platformAccounts, addPlatformAccount, removePlatformAccount } = useContentHub()
 
-  const handleConnect = (platform: string) => {
-    // Mock OAuth flow
+  const handleConnect = async (platform: string) => {
     toast.success(`Redirecting to ${platform} OAuth...`)
 
-    setTimeout(() => {
-      toast.success(`${platform} connected successfully!`)
+    setTimeout(async () => {
+      try {
+        const res = await fetch('/api/platforms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            platform: platform.toLowerCase(),
+            account_name: `My ${platform} Account`,
+            access_token: 'mock_token_' + Math.random().toString(36).substr(2, 9),
+            refresh_token: 'mock_refresh_token',
+            platform_user_id: 'user_' + Math.random().toString(36).substr(2, 9),
+            expires_at: new Date(Date.now() + 3600000).toISOString(),
+          }),
+        })
 
-      const newAccount = {
-        id: Math.random().toString(36).substr(2, 9),
-        user_id: '',
-        platform: platform as any,
-        account_name: `My ${platform} Account`,
-        access_token: 'mock_token_' + Math.random().toString(36).substr(2, 9),
-        refresh_token: 'mock_refresh_token',
-        platform_user_id: 'user_' + Math.random().toString(36).substr(2, 9),
-        connected_at: new Date().toISOString(),
+        if (!res.ok) throw new Error('Failed to connect')
+        
+        const { account } = await res.json()
+        addPlatformAccount(account)
+        toast.success(`${platform} connected successfully!`)
+      } catch (error) {
+        toast.error('Failed to connect platform')
       }
-
-      addPlatformAccount(newAccount)
     }, 1000)
   }
 
@@ -208,9 +215,16 @@ export default function ConnectionsPage() {
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => {
-                          removePlatformAccount(account?.id || '')
-                          toast.success(`${platform.name} disconnected`)
+                        onClick={async () => {
+                          if (!account?.id) return
+                          try {
+                            const res = await fetch(`/api/platforms?id=${account.id}`, { method: 'DELETE' })
+                            if (!res.ok) throw new Error('Failed to delete')
+                            removePlatformAccount(account.id)
+                            toast.success(`${platform.name} disconnected`)
+                          } catch (error) {
+                            toast.error('Failed to disconnect platform')
+                          }
                         }}
                         className="w-full py-2 px-4 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors flex items-center justify-center gap-2 font-medium text-sm"
                       >

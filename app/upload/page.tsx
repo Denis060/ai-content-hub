@@ -59,22 +59,24 @@ export default function UploadPage() {
     setIsUploading(true)
 
     try {
-      // Simulate upload
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      const res = await fetch('/api/videos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          video_url: '/mock-video.mp4',
+          thumbnail_url: '/mock-thumbnail.jpg',
+          scheduled_time: formData.scheduledTime || new Date().toISOString(),
+          platforms: selectedPlatforms,
+          status: (formData.scheduledTime ? 'scheduled' : 'published'),
+        }),
+      })
 
-      const newVideo = {
-        id: Math.random().toString(36).substr(2, 9),
-        user_id: '',
-        title: formData.title,
-        description: formData.description,
-        video_url: '/mock-video.mp4',
-        scheduled_time: formData.scheduledTime || new Date().toISOString(),
-        platforms: selectedPlatforms,
-        status: (formData.scheduledTime ? 'scheduled' : 'published') as 'scheduled' | 'published',
-        created_at: new Date().toISOString(),
-      }
-
-      addVideo(newVideo)
+      if (!res.ok) throw new Error('Failed to create video')
+      
+      const { video } = await res.json()
+      addVideo(video)
 
       toast.success(
         `Video ${formData.scheduledTime ? 'scheduled' : 'published'} successfully!`

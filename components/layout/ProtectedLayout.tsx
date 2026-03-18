@@ -15,7 +15,7 @@ export default function ProtectedLayout({
 }) {
   const router = useRouter()
   const pathname = usePathname()
-  const { user, setUser, isLoading, setLoading } = useContentHub()
+  const { user, setUser, isLoading, setLoading, setPlatformAccounts, setVideos } = useContentHub()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -34,6 +34,23 @@ export default function ProtectedLayout({
             email: session.user.email || '',
             name: session.user.user_metadata?.name || '',
           })
+
+          try {
+            const [platformsRes, videosRes] = await Promise.all([
+              fetch('/api/platforms'),
+              fetch('/api/videos')
+            ])
+            if (platformsRes.ok) {
+              const { accounts } = await platformsRes.json()
+              setPlatformAccounts(accounts || [])
+            }
+            if (videosRes.ok) {
+              const { videos } = await videosRes.json()
+              setVideos(videos || [])
+            }
+          } catch (e) {
+            console.error('Failed to hydrate store', e)
+          }
         } else {
           if (pathname !== '/login') {
             router.push('/login')
