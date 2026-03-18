@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { useContentHub } from '@/lib/store'
 import Navigation from './Navigation'
@@ -14,6 +14,7 @@ export default function ProtectedLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const pathname = usePathname()
   const { user, setUser, isLoading, setLoading } = useContentHub()
   const [mounted, setMounted] = useState(false)
 
@@ -50,8 +51,12 @@ export default function ProtectedLayout({
     return <LoadingScreen />
   }
 
-  if (!user) {
+  if (!user && pathname !== '/login') {
     return null
+  }
+
+  if (pathname === '/login') {
+    return <>{children}</>
   }
 
   return (
