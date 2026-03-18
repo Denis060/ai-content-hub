@@ -78,7 +78,10 @@ export default function ConnectionsPage() {
     if (platform === 'youtube') {
       const supabase = createSupabaseBrowserClient()
       toast.loading('Redirecting securely to Google...')
-      const { error } = await supabase.auth.linkIdentity({
+      
+      // Using signInWithOAuth instead of linkIdentity to avoid API compatibility 404 errors 
+      // on older Supabase Project infrastructures. It achieves the exact same OAuth redirect.
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/connections`,
