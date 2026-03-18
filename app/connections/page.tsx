@@ -98,32 +98,12 @@ export default function ConnectionsPage() {
       return
     }
 
-    toast.success(`Redirecting to ${platform} OAuth...`)
+    if (platform === 'tiktok') {
+      window.location.href = '/api/auth/tiktok'
+      return
+    }
 
-    setTimeout(async () => {
-      try {
-        const res = await fetch('/api/platforms', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            platform: platform.toLowerCase(),
-            account_name: `My ${platform} Account`,
-            access_token: 'mock_token_' + Math.random().toString(36).substr(2, 9),
-            refresh_token: 'mock_refresh_token',
-            platform_user_id: 'user_' + Math.random().toString(36).substr(2, 9),
-            expires_at: new Date(Date.now() + 3600000).toISOString(),
-          }),
-        })
-
-        if (!res.ok) throw new Error('Failed to connect')
-        
-        const { account } = await res.json()
-        addPlatformAccount(account)
-        toast.success(`${platform} connected successfully!`)
-      } catch (error) {
-        toast.error('Failed to connect platform')
-      }
-    }, 1000)
+    toast.error(`OAuth integration for ${platform} is not fully built yet`)
   }
 
   return (
