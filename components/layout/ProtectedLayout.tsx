@@ -20,9 +20,10 @@ export default function ProtectedLayout({
 
   useEffect(() => {
     setMounted(true)
+    const supabase = createSupabaseBrowserClient()
+
     const checkAuth = async () => {
       try {
-        const supabase = createSupabaseBrowserClient()
         const {
           data: { session },
         } = await supabase.auth.getSession()
@@ -34,18 +35,41 @@ export default function ProtectedLayout({
             name: session.user.user_metadata?.name || '',
           })
         } else {
-          router.push('/login')
+          if (pathname !== '/login') {
+            router.push('/login')
+          }
         }
       } catch (error) {
         console.error('Auth error:', error)
-        router.push('/login')
+        if (pathname !== '/login') {
+          router.push('/login')
+        }
       } finally {
         setLoading(false)
       }
     }
 
     checkAuth()
-  }, [setUser, setLoading, router])
+
+    // Listen for auth state changes (e.g., successful login)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || '',
+        })
+      } else {
+        setUser(null)
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [setUser, setLoading, router, pathname])
 
   if (!mounted || isLoading) {
     return <LoadingScreen />
