@@ -100,13 +100,13 @@ export default function SettingsPage() {
 
       {/* Account Tab */}
       {activeTab === 'account' && (
-        <motion.form
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          onSubmit={handleAccountUpdate}
           className="space-y-6"
         >
-          <motion.div
+          <motion.form
+            onSubmit={handleAccountUpdate}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="card"

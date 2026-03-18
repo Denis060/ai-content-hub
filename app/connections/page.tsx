@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { FiLink, FiUnlink, FiCheck, FiArrowRight, FiAlertCircle } from 'react-icons/fi'
+import { FiLink, FiX, FiCheck, FiArrowRight, FiAlertCircle } from 'react-icons/fi'
 import { SiTiktok, SiFacebook } from 'react-icons/si'
 import { FiYoutube, FiInstagram } from 'react-icons/fi'
 import { useContentHub } from '@/lib/store'
@@ -214,7 +214,7 @@ export default function ConnectionsPage() {
                         }}
                         className="w-full py-2 px-4 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors flex items-center justify-center gap-2 font-medium text-sm"
                       >
-                        <FiUnlink />
+                        <FiX />
                         Disconnect
                       </motion.button>
                     </motion.div>

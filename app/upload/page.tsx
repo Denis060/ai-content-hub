@@ -70,7 +70,7 @@ export default function UploadPage() {
         video_url: '/mock-video.mp4',
         scheduled_time: formData.scheduledTime || new Date().toISOString(),
         platforms: selectedPlatforms,
-        status: formData.scheduledTime ? 'scheduled' : 'published',
+        status: (formData.scheduledTime ? 'scheduled' : 'published') as 'scheduled' | 'published',
         created_at: new Date().toISOString(),
       }
 

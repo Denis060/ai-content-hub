@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import {
   FiHome,
   FiUpload,
-  FiBarChart3,
+  FiBarChart2,
   FiSettings,
   FiLink2,
   FiPlay,
@@ -16,7 +16,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: FiHome },
   { href: '/upload', label: 'Upload Video', icon: FiUpload },
   { href: '/scheduled', label: 'Scheduled', icon: FiPlay },
-  { href: '/analytics', label: 'Analytics', icon: FiBarChart3 },
+  { href: '/analytics', label: 'Analytics', icon: FiBarChart2 },
   { href: '/connections', label: 'Connections', icon: FiLink2 },
   { href: '/settings', label: 'Settings', icon: FiSettings },
 ]
