@@ -1,21 +1,59 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
-const data = [
-  { date: 'Mon', youtube: 2400, tiktok: 2210, instagram: 2290, facebook: 2000 },
-  { date: 'Tue', youtube: 1398, tiktok: 2210, instagram: 2000, facebook: 2181 },
-  { date: 'Wed', youtube: 9800, tiktok: 2290, instagram: 2000, facebook: 2500 },
-  { date: 'Thu', youtube: 3908, tiktok: 2000, instagram: 2181, facebook: 2100 },
-  { date: 'Fri', youtube: 4800, tiktok: 2181, instagram: 2500, facebook: 2290 },
-  { date: 'Sat', youtube: 3800, tiktok: 2500, instagram: 2100, facebook: 2000 },
-  { date: 'Sun', youtube: 4300, tiktok: 2100, instagram: 2300, facebook: 2500 },
+const fallbackData = [
+  { date: 'Mon', youtube: 0, tiktok: 0, instagram: 0, facebook: 0 },
+  { date: 'Tue', youtube: 0, tiktok: 0, instagram: 0, facebook: 0 },
+  { date: 'Wed', youtube: 0, tiktok: 0, instagram: 0, facebook: 0 },
+  { date: 'Thu', youtube: 0, tiktok: 0, instagram: 0, facebook: 0 },
+  { date: 'Fri', youtube: 0, tiktok: 0, instagram: 0, facebook: 0 },
+  { date: 'Sat', youtube: 0, tiktok: 0, instagram: 0, facebook: 0 },
+  { date: 'Sun', youtube: 0, tiktok: 0, instagram: 0, facebook: 0 },
 ]
 
 export default function AnalyticsChart() {
+  const [data, setData] = useState(fallbackData)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/analytics')
+        if (!res.ok) return
+        const json = await res.json()
+
+        if (json.recentByDate && Object.keys(json.recentByDate).length > 0) {
+          const chartData = Object.entries(json.recentByDate).map(
+            ([date, platforms]: [string, any]) => ({
+              date,
+              youtube: platforms.youtube || 0,
+              tiktok: platforms.tiktok || 0,
+              instagram: platforms.instagram || 0,
+              facebook: platforms.facebook || 0,
+            })
+          )
+          setData(chartData)
+        }
+      } catch (e) {
+        console.error('Failed to fetch chart data', e)
+      }
+    }
+    fetchData()
+  }, [])
+
+  const hasData = data.some(
+    (d) => d.youtube > 0 || d.tiktok > 0 || d.instagram > 0 || d.facebook > 0
+  )
+
   return (
     <div className="card">
       <h2 className="text-2xl font-bold mb-6">Weekly Views</h2>
+      {!hasData && (
+        <p className="text-sm text-slate-500 mb-4">
+          Analytics will appear here once your videos start getting views.
+        </p>
+      )}
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
@@ -40,7 +78,7 @@ export default function AnalyticsChart() {
           <Line
             type="monotone"
             dataKey="tiktok"
-            stroke="#000000"
+            stroke="#64748b"
             strokeWidth={2}
             dot={false}
             activeDot={{ r: 6 }}

@@ -5,6 +5,7 @@ import { useContentHub } from '@/lib/store'
 import { FiYoutube, FiInstagram, FiPlay, FiTrash2 } from 'react-icons/fi'
 import { SiTiktok, SiFacebook } from 'react-icons/si'
 import { format } from 'date-fns'
+import toast from 'react-hot-toast'
 
 const platformIcons = {
   youtube: { icon: FiYoutube, color: 'text-red-400' },
@@ -88,7 +89,16 @@ export default function RecentVideos() {
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              onClick={() => deleteVideo(video.id)}
+              onClick={async () => {
+                try {
+                  const res = await fetch(`/api/videos?id=${video.id}`, { method: 'DELETE' })
+                  if (!res.ok) throw new Error('Failed to delete')
+                  deleteVideo(video.id)
+                  toast.success('Video deleted')
+                } catch (error) {
+                  toast.error('Failed to delete video')
+                }
+              }}
               className="p-2 rounded-lg hover:bg-red-500/20 text-red-400 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
             >
               <FiTrash2 />

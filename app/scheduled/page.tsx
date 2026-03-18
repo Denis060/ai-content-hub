@@ -152,9 +152,19 @@ export default function ScheduledPage() {
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => {
-                          updateVideo(video.id, { status: 'draft' })
-                          toast.success('Video paused')
+                        onClick={async () => {
+                          try {
+                            const res = await fetch(`/api/videos?id=${video.id}`, {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ status: 'draft' }),
+                            })
+                            if (!res.ok) throw new Error('Failed to update')
+                            updateVideo(video.id, { status: 'draft' })
+                            toast.success('Video paused')
+                          } catch (error) {
+                            toast.error('Failed to pause video')
+                          }
                         }}
                         className="p-2 hover:bg-yellow-500/20 text-yellow-400 rounded-lg transition-colors"
                         title="Pause"
@@ -166,9 +176,15 @@ export default function ScheduledPage() {
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => {
-                        deleteVideo(video.id)
-                        toast.success('Video deleted')
+                      onClick={async () => {
+                        try {
+                          const res = await fetch(`/api/videos?id=${video.id}`, { method: 'DELETE' })
+                          if (!res.ok) throw new Error('Failed to delete')
+                          deleteVideo(video.id)
+                          toast.success('Video deleted')
+                        } catch (error) {
+                          toast.error('Failed to delete video')
+                        }
                       }}
                       className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
                       title="Delete"

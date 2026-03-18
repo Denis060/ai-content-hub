@@ -59,14 +59,33 @@ export default function UploadPage() {
     setIsUploading(true)
 
     try {
+      // Step 1: Upload the actual video file to Supabase Storage
+      let videoUrl = ''
+      const uploadFormData = new FormData()
+      uploadFormData.append('video', videoFile)
+
+      const uploadRes = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      })
+
+      if (uploadRes.ok) {
+        const uploadData = await uploadRes.json()
+        videoUrl = uploadData.video_url
+      } else {
+        // Fallback: store without file if storage isn't configured yet
+        console.warn('File upload failed, storing metadata only')
+        videoUrl = `pending://${videoFile.name}`
+      }
+
+      // Step 2: Create the video record in the database
       const res = await fetch('/api/videos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: formData.title,
           description: formData.description,
-          video_url: '/mock-video.mp4',
-          thumbnail_url: '/mock-thumbnail.jpg',
+          video_url: videoUrl,
           scheduled_time: formData.scheduledTime || new Date().toISOString(),
           platforms: selectedPlatforms,
           status: (formData.scheduledTime ? 'scheduled' : 'published'),
@@ -74,7 +93,7 @@ export default function UploadPage() {
       })
 
       if (!res.ok) throw new Error('Failed to create video')
-      
+
       const { video } = await res.json()
       addVideo(video)
 

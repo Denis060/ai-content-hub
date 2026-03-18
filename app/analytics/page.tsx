@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useContentHub } from '@/lib/store'
 import {
@@ -20,64 +21,87 @@ import {
 import { FiTrendingUp, FiEye, FiHeart, FiMessageCircle } from 'react-icons/fi'
 import { FiShare2 } from 'react-icons/fi'
 
-const viewData = [
-  { date: 'Mon', views: 2400 },
-  { date: 'Tue', views: 1398 },
-  { date: 'Wed', views: 9800 },
-  { date: 'Thu', views: 3908 },
-  { date: 'Fri', views: 4800 },
-  { date: 'Sat', views: 3800 },
-  { date: 'Sun', views: 4300 },
-]
+const colors = ['#ef4444', '#64748b', '#ec4899', '#3b82f6']
 
-const platformData = [
-  { name: 'YouTube', value: 45 },
-  { name: 'TikTok', value: 28 },
-  { name: 'Instagram', value: 18 },
-  { name: 'Facebook', value: 9 },
-]
-
-const colors = ['#ef4444', '#000000', '#ec4899', '#3b82f6']
-
-const engagementData = [
-  { metric: 'Views', value: 45200 },
-  { metric: 'Likes', value: 3420 },
-  { metric: 'Comments', value: 892 },
-  { metric: 'Shares', value: 456 },
-]
+function formatNumber(n: number): string {
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'K'
+  return n.toLocaleString()
+}
 
 export default function AnalyticsPage() {
   const { videos, platformAccounts } = useContentHub()
   const publishedVideos = videos.filter((v) => v.status === 'published')
 
+  const [totals, setTotals] = useState({ views: 0, likes: 0, comments: 0, shares: 0, watch_time: 0 })
+  const [avgEngagement, setAvgEngagement] = useState(0)
+  const [byPlatform, setByPlatform] = useState<Record<string, number>>({})
+  const [recentByDate, setRecentByDate] = useState<Record<string, Record<string, number>>>({})
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const res = await fetch('/api/analytics')
+        if (!res.ok) return
+        const data = await res.json()
+        setTotals(data.totals)
+        setAvgEngagement(data.avgEngagement)
+        setByPlatform(data.byPlatform || {})
+        setRecentByDate(data.recentByDate || {})
+      } catch (e) {
+        console.error('Failed to fetch analytics', e)
+      } finally {
+        setLoaded(true)
+      }
+    }
+    fetchAnalytics()
+  }, [])
+
+  const hasData = totals.views > 0 || totals.likes > 0
+
+  // Build chart data from API response
+  const viewData = Object.entries(recentByDate).map(([date, platforms]) => ({
+    date,
+    views: Object.values(platforms).reduce((sum, v) => sum + v, 0),
+  }))
+
+  const platformData = Object.entries(byPlatform).map(([name, value]) => ({
+    name: name.charAt(0).toUpperCase() + name.slice(1),
+    value,
+  }))
+
+  const engagementData = [
+    { metric: 'Views', value: totals.views },
+    { metric: 'Likes', value: totals.likes },
+    { metric: 'Comments', value: totals.comments },
+    { metric: 'Shares', value: totals.shares },
+  ]
+
   const stats = [
     {
       label: 'Total Views',
-      value: '45.2K',
+      value: formatNumber(totals.views),
       icon: FiEye,
       color: 'from-blue-500 to-cyan-500',
-      change: '+12.5%',
     },
     {
       label: 'Total Likes',
-      value: '3,420',
+      value: formatNumber(totals.likes),
       icon: FiHeart,
       color: 'from-red-500 to-pink-500',
-      change: '+8.2%',
     },
     {
       label: 'Total Comments',
-      value: '892',
+      value: formatNumber(totals.comments),
       icon: FiMessageCircle,
       color: 'from-purple-500 to-pink-500',
-      change: '+15.3%',
     },
     {
       label: 'Total Shares',
-      value: '456',
+      value: formatNumber(totals.shares),
       icon: FiShare2,
       color: 'from-orange-500 to-red-500',
-      change: '+22.1%',
     },
   ]
 
@@ -125,14 +149,11 @@ export default function AnalyticsPage() {
                 </motion.div>
               </div>
 
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: i * 0.1 + 0.1 }}
-                className="text-sm font-medium text-green-400"
-              >
-                {stat.change} from last week
-              </motion.p>
+              {!hasData && (
+                <p className="text-xs text-slate-500 mt-1">
+                  No data yet
+                </p>
+              )}
             </motion.div>
           )
         })}
@@ -244,7 +265,7 @@ export default function AnalyticsPage() {
         </div>
         <div className="card">
           <p className="text-slate-400 text-sm mb-2">Avg. Engagement Rate</p>
-          <p className="text-3xl font-bold">7.2%</p>
+          <p className="text-3xl font-bold">{avgEngagement}%</p>
         </div>
       </motion.div>
 

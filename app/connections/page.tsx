@@ -5,6 +5,7 @@ import { FiLink, FiX, FiCheck, FiArrowRight, FiAlertCircle } from 'react-icons/f
 import { SiTiktok, SiFacebook } from 'react-icons/si'
 import { FiYoutube, FiInstagram } from 'react-icons/fi'
 import { useContentHub } from '@/lib/store'
+import { createSupabaseBrowserClient } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 
 const platformConfigs = [
@@ -74,6 +75,26 @@ export default function ConnectionsPage() {
   const { platformAccounts, addPlatformAccount, removePlatformAccount } = useContentHub()
 
   const handleConnect = async (platform: string) => {
+    if (platform === 'youtube') {
+      const supabase = createSupabaseBrowserClient()
+      toast.loading('Redirecting securely to Google...')
+      const { error } = await supabase.auth.linkIdentity({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/connections`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+          scopes: 'https://www.googleapis.com/auth/youtube.upload'
+        }
+      })
+      if (error) {
+        toast.error(`Connection Error: ${error.message}`)
+      }
+      return
+    }
+
     toast.success(`Redirecting to ${platform} OAuth...`)
 
     setTimeout(async () => {
