@@ -1,3 +1,4 @@
+/* Force cache rebuild for Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
