@@ -103,6 +103,11 @@ export default function ConnectionsPage() {
       return
     }
 
+    if (platform === 'facebook' || platform === 'instagram') {
+      window.location.href = '/api/auth/facebook'
+      return
+    }
+
     toast.error(`OAuth integration for ${platform} is not fully built yet`)
   }
 
