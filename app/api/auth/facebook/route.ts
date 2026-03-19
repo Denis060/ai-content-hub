@@ -23,8 +23,8 @@ export async function GET(request: Request) {
   const protocol = host.includes('localhost') ? 'http' : 'https'
   const redirectUri = encodeURIComponent(`${protocol}://${host}/api/auth/callback/facebook`)
 
-  // Meta permissions required to post videos to Facebook Pages
-  const scope = encodeURIComponent('email,public_profile,pages_show_list,pages_manage_posts,pages_read_engagement')
+  // Start with baseline scopes to test if Facebook's advanced "Use Case" permissions are blocking the dialog
+  const scope = encodeURIComponent('email,public_profile')
 
   // Construct Facebook Authorization URL
   const facebookAuthUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=${scope}&response_type=code`
