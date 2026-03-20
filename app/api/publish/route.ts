@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
     // 1. Verify exact ownership over the video record
     const { data: video, error: videoError } = await supabase
-      .from('videos')
+      .from('scheduled_videos')
       .select('id, file_path')
       .eq('id', videoId)
       .eq('user_id', user.id)
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
     // 3. Update the global video status flag to instantly feedback accurately 
     await supabase
-      .from('videos')
+      .from('scheduled_videos')
       .update({
         publish_status: 'queued',
         youtube_status: null,

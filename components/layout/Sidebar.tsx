@@ -10,11 +10,13 @@ import {
   FiSettings,
   FiLink2,
   FiPlay,
+  FiSend,
 } from 'react-icons/fi'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: FiHome },
   { href: '/upload', label: 'Upload Video', icon: FiUpload },
+  { href: '/publish', label: 'Publish Video', icon: FiSend },
   { href: '/scheduled', label: 'Scheduled', icon: FiPlay },
   { href: '/analytics', label: 'Analytics', icon: FiBarChart2 },
   { href: '/connections', label: 'Connections', icon: FiLink2 },

@@ -26,7 +26,7 @@ export const publishVideoJob = inngest.createFunction(
     // 1. Securely fetch the physical video file directly from the private bucket
     const signedUrlData = await step.run('get-signed-url', async () => {
       const { data: video, error: fetchError } = await supabase
-        .from('videos')
+        .from('scheduled_videos')
         .select('file_path')
         .eq('id', videoId)
         .single()
@@ -61,7 +61,7 @@ export const publishVideoJob = inngest.createFunction(
             }
 
             // Report granularly that we started
-            await supabase.from('videos')
+            await supabase.from('scheduled_videos')
               .update({ [`${platform}_status`]: 'uploading' })
               .eq('id', videoId)
 
@@ -86,7 +86,7 @@ export const publishVideoJob = inngest.createFunction(
             }
 
             // Flag success
-            await supabase.from('videos')
+            await supabase.from('scheduled_videos')
               .update({
                 [`${platform}_status`]: 'published',
                 [`${platform}_video_id`]: result.videoId,
@@ -101,7 +101,7 @@ export const publishVideoJob = inngest.createFunction(
           } catch (error: any) {
             console.error(`[Platform] ❌ ${platform} strictly failed the stream processing:`, error)
 
-            await supabase.from('videos')
+            await supabase.from('scheduled_videos')
               .update({
                 [`${platform}_status`]: 'failed'
               })
@@ -117,7 +117,7 @@ export const publishVideoJob = inngest.createFunction(
     const allSuccess = publishResults.every(r => r.success)
     const successCount = publishResults.filter(r => r.success).length
 
-    await supabase.from('videos')
+    await supabase.from('scheduled_videos')
       .update({
         publish_status: allSuccess ? 'published' : 'failed',
         publish_completed_at: new Date().toISOString(),
